@@ -10,7 +10,7 @@
 // пин кнопки сигнализации
 const int buttonPin = A5;
 // порог срабатывания кнопки сигнализации
-const int buttonThreshold = 900;
+const int buttonThreshold = 950;
 
 // пин датчика дыма
 const int sensorPin = A4;
