@@ -3,7 +3,7 @@
 // Примечание: для упрощения монтажа питание на клавиатуру подается с pin'а МК
 //
 // Дата начала разработки 2019-06-29
-// Дата последней модификации 2019-07-20
+// Дата последней модификации 2012-03-19
 
 #define DEBUG 1
 
@@ -57,7 +57,7 @@ const int soundOnNum = 1;
 const int soundOnDur = 2;
 // зв.фрагмент извещения (номер и продолжительность в сек)
 const int soundAlarmNum = 2;
-const int soundAlarmDur = 7;
+const int soundAlarmDur = 9;
 
 // обработчик прерывания INT0
 void kbdInterruptHandler() {
