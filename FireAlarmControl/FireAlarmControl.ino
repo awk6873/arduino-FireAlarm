@@ -3,7 +3,7 @@
 // Примечание: для упрощения монтажа питание на клавиатуру подается с pin'а МК
 //
 // Дата начала разработки 2019-06-29
-// Дата последней модификации 2012-03-19
+// Дата последней модификации 2022-04-06
 
 #define DEBUG 1
 
@@ -12,8 +12,13 @@ const int buttonPin = A5;
 // порог срабатывания кнопки сигнализации
 const int buttonThreshold = 950;
 
-// пин датчика дыма
+// пин датчика дыма и примесей
 const int sensorPin = A4;
+
+// пин датчика дыма
+const int sensor2Pin = A0;
+// порог срабатывания датчика дыма
+const int sensor2Threshold = 800;
 
 // светодиод индикации состояния
 const int statusLED = 13;
@@ -138,6 +143,7 @@ void setup() {
   // кнопка и датчик
   pinMode(buttonPin, INPUT);
   pinMode(sensorPin, INPUT);
+  pinMode(sensor2Pin, INPUT);
   
   // индикатор состояния
   pinMode(statusLED, OUTPUT);
@@ -172,15 +178,16 @@ void setup() {
 }
 
 void loop() {
-  int buttonStatus, sensorStatus;
+  int buttonStatus, sensorStatus, sensor2Status;
   static int alarmStatus = 0;
   static long alarmSoundStartTime = 0;
 
   // проверка на включение режима тревоги
-  // проверяем состояние кнопки и датчика 
+  // проверяем состояние кнопки и датчиков
   buttonStatus = analogRead(buttonPin) < buttonThreshold ? 1:0;
+  sensor2Status = analogRead(sensor2Pin) < sensor2Threshold ? 1:0;
   sensorStatus = digitalRead(sensorPin) > 0 ? 0:1;
-  if ((buttonStatus == 1 || sensorStatus == 1) && alarmStatus == 0) {
+  if ((buttonStatus == 1 || sensorStatus == 1 || sensor2Status) && alarmStatus == 0) {
     // включаем режим тревоги
     #ifdef DEBUG
     Serial.println("Alarm mode is ON");
