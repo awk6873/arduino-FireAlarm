@@ -3,7 +3,7 @@
 // Примечание: для упрощения монтажа питание на клавиатуру подается с pin'а МК
 //
 // Дата начала разработки 2019-06-29
-// Дата последней модификации 2022-04-06
+// Дата последней модификации 2022-04-07
 
 #define DEBUG 1
 
@@ -46,6 +46,9 @@ const byte kbdMaskPortB = 0b00000111;
 // состояния нажания кнопок клавиатуры и признак нового нажатия
 volatile byte kbdPressedKeys;
 volatile byte kbdPressedFlag;
+
+// интервал сброса нажатий для переинициализации ввода, сек
+const int kbdResetInterval = 5;
 
 // счетчик ввода цифр пин-кода
 int pinCodeCnt = 0;
@@ -181,6 +184,7 @@ void loop() {
   int buttonStatus, sensorStatus, sensor2Status;
   static int alarmStatus = 0;
   static long alarmSoundStartTime = 0;
+  static long kbdPressedTime = 0;
 
   // проверка на включение режима тревоги
   // проверяем состояние кнопки и датчиков
@@ -209,9 +213,11 @@ void loop() {
     if (alarmStatus == 1) {
       // если в режиме тревоги, то накапливаем вводимый пин-код в буфере
       
-      // помещаем введенный код в буфер ввода пин-кода
+      // помещаем введенный код в буфер ввода пин-кода, запоминаем время нажатия
       pinCodeBuff = pinCodeBuff + codeReceived;
       pinCodeCnt++;
+      kbdPressedTime = millis();
+      
       if (pinCodeCnt == 4) {
         // введены все цифры пин-кода, выполняем проверку
         if (pinCodeBuff == pinCodeEtal) {
@@ -236,8 +242,19 @@ void loop() {
         pinCodeCnt = 0;
       }
     }  
-  }  
-    
+  }
+
+  // сбрасываем буфер и счетчик пин-кода через N секунд после последнего нажатия 
+  // для очистки частично введенного пин-кода
+  if (millis() - kbdPressedTime > kbdResetInterval * 1000 && pinCodeCnt > 0) {
+    #ifdef DEBUG
+    Serial.println("Resetting incomplete PINCODE");
+    #endif
+    pinCodeBuff = ""; 
+    pinCodeCnt = 0;
+    fastBlinkStatusLED();
+  }
+   
   if (alarmStatus == 1 && (alarmSoundStartTime == 0 || (millis() - alarmSoundStartTime > soundAlarmDur * 1000))) {
     // находимся в режим тревоги, но звуковой сигнал еще не включен или уже завершился
     #ifdef DEBUG
