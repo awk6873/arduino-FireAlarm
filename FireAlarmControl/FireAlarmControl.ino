@@ -15,8 +15,9 @@ const int buttonThreshold = 950;
 // пин датчика дыма и примесей
 const int sensorPin = A4;
 
-// пин датчика дыма
+// пины датчика дыма
 const int sensor2Pin = A0;
+const int sensor2ControlPin = A1;
 // порог срабатывания датчика дыма
 const int sensor2Threshold = 800;
 
@@ -143,10 +144,11 @@ void setup() {
   #endif
 
   // инициализация портов
-  // кнопка и датчик
+  // кнопка и датчики
   pinMode(buttonPin, INPUT);
   pinMode(sensorPin, INPUT);
   pinMode(sensor2Pin, INPUT);
+  pinMode(sensor2ControlPin, OUTPUT);
   
   // индикатор состояния
   pinMode(statusLED, OUTPUT);
@@ -173,6 +175,9 @@ void setup() {
   // подаём питание на клавиатуру
   digitalWrite(kbdPowerPin, HIGH);
   delay(100);
+
+  // подаём питание на датчик дыма
+  digitalWrite(sensor2ControlPin, LOW);
   
   // подключаем обработчик прерываний от клавиатуры
   attachInterrupt(0, kbdInterruptHandler, RISING);
@@ -226,6 +231,13 @@ void loop() {
           Serial.println("Correct PINCODE entered, alarm mode is OFF");
           #endif
           alarmStatus = 0;
+          // отключаем питание датчика дыма для сброса
+          #ifdef DEBUG
+          Serial.println("Resetting smoke sensor");
+          #endif
+          digitalWrite(sensor2ControlPin, HIGH);
+          delay(1000);
+          digitalWrite(sensor2ControlPin, LOW); 
         } 
         else {
           // код не совпал, мигаем светиком
